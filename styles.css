@@ -76,6 +76,12 @@ nav .container {
   color: var(--purple);
 }
 
+.nav-links a + a::before {
+  content: " | ";
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
 /* ── Hero ── */
 .hero {
   padding: 4rem 0 2.5rem;
