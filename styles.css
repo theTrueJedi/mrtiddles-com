@@ -178,6 +178,33 @@ nav .container {
   line-height: 1.65;
 }
 
+.service-card ul {
+  padding-left: 1.15rem;
+  margin-top: 0.65rem;
+  list-style: none;
+}
+
+.service-card ul li {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 0.2rem;
+  padding-left: 0.75rem;
+  position: relative;
+}
+
+.service-card ul li::before {
+  content: "–";
+  position: absolute;
+  left: 0;
+  color: var(--lavender);
+  font-weight: 500;
+}
+
+.service-card.purple ul li::before { color: var(--purple); }
+.service-card.blue   ul li::before { color: var(--blue); }
+.service-card.teal   ul li::before { color: var(--teal); }
+
 /* ── Contact ── */
 .contact {
   padding: 2.5rem 0 4rem;
