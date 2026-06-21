@@ -205,6 +205,17 @@ nav .container {
 .service-card.blue   ul li::before { color: var(--blue); }
 .service-card.teal   ul li::before { color: var(--teal); }
 
+.service-card ul li a {
+  color: var(--purple);
+  text-decoration: none;
+  border-bottom: 1px solid var(--lavender-light);
+  transition: border-color 180ms ease;
+}
+
+.service-card ul li a:hover {
+  border-color: var(--purple);
+}
+
 /* ── Contact ── */
 .contact {
   padding: 2.5rem 0 4rem;
