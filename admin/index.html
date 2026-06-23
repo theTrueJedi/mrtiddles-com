@@ -142,12 +142,17 @@
 
     /* Add phone form */
     .add-form {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
       gap: 0.6rem;
       margin-bottom: 1.75rem;
     }
+    @media (max-width: 520px) {
+      .add-form { grid-template-columns: 1fr auto; }
+      .add-form #nickname-input { grid-column: 1; }
+      .add-form #add-btn { grid-column: 2; grid-row: 1 / span 2; align-self: stretch; }
+    }
     .add-form input {
-      flex: 1;
       padding: 0.7rem 1rem;
       border: 1.5px solid var(--border);
       border-radius: 10px;
@@ -192,10 +197,17 @@
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 
+    .phone-info { display: flex; flex-direction: column; gap: 0.1rem; }
+    .phone-nickname {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+    }
     .phone-number {
-      font-size: 0.95rem;
-      font-weight: 500;
+      font-size: 0.85rem;
+      font-weight: 400;
       font-variant-numeric: tabular-nums;
+      color: var(--text-secondary);
       letter-spacing: 0.01em;
     }
 
@@ -317,6 +329,7 @@
         <p class="section-label">Add Phone Number</p>
         <div class="add-form">
           <input type="tel" id="phone-input" placeholder="+1 (555) 555-5555" autocomplete="off">
+          <input type="text" id="nickname-input" placeholder="Nickname (e.g. Evan)" autocomplete="off">
           <button class="btn-primary" id="add-btn">Add</button>
         </div>
 
@@ -353,7 +366,8 @@
       setDoc,
       updateDoc,
       arrayUnion,
-      arrayRemove
+      arrayRemove,
+      deleteField
     } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
 
     const FIREBASE_CONFIG = {
@@ -378,6 +392,7 @@
     const switchBtn      = document.getElementById('switch-account-btn');
     const signOutBtn     = document.getElementById('sign-out-btn');
     const phoneInput     = document.getElementById('phone-input');
+    const nicknameInput  = document.getElementById('nickname-input');
     const addBtn         = document.getElementById('add-btn');
     const phoneList      = document.getElementById('phone-list');
     const statusEl       = document.getElementById('status');
@@ -424,26 +439,27 @@
       phoneList.innerHTML = '<li class="empty-state">Loading…</li>';
       try {
         const snap = await getDoc(doc(db, 'users', currentUid, 'settings', 'veda'));
-        const phones = snap.exists() ? (snap.data().trustedPhones || []) : [];
-        renderPhones(phones);
+        const data = snap.exists() ? snap.data() : {};
+        renderPhones(data.trustedPhones || [], data.phoneNicknames || {});
       } catch (e) {
         toast('Failed to load numbers.', true);
         phoneList.innerHTML = '<li class="empty-state">Could not load numbers.</li>';
       }
     }
 
-    function renderPhones(phones) {
+    function renderPhones(phones, nicknames) {
       if (!phones.length) {
         phoneList.innerHTML = '<li class="empty-state">No trusted numbers yet.</li>';
         return;
       }
-      phoneList.innerHTML = phones
-        .map(p => `
-          <li class="phone-item">
+      phoneList.innerHTML = phones.map(p => `
+        <li class="phone-item">
+          <div class="phone-info">
+            ${nicknames[p] ? `<span class="phone-nickname">${nicknames[p]}</span>` : ''}
             <span class="phone-number">${p}</span>
-            <button class="btn-remove" data-phone="${p}">Remove</button>
-          </li>`)
-        .join('');
+          </div>
+          <button class="btn-remove" data-phone="${p}">Remove</button>
+        </li>`).join('');
       phoneList.querySelectorAll('.btn-remove').forEach(btn => {
         btn.addEventListener('click', () => removePhone(btn.dataset.phone));
       });
@@ -451,10 +467,12 @@
 
     // ── Add phone ─────────────────────────────────────────────────────────
     addBtn.addEventListener('click', () => addPhone());
-    phoneInput.addEventListener('keydown', e => { if (e.key === 'Enter') addPhone(); });
+    phoneInput.addEventListener('keydown', e => { if (e.key === 'Enter') nicknameInput.focus(); });
+    nicknameInput.addEventListener('keydown', e => { if (e.key === 'Enter') addPhone(); });
 
     async function addPhone() {
-      const raw = phoneInput.value.trim();
+      const raw      = phoneInput.value.trim();
+      const nickname = nicknameInput.value.trim();
       const normalized = toE164(raw);
       if (!normalized) {
         toast('Enter a valid US phone number.', true);
@@ -463,15 +481,20 @@
       }
       addBtn.disabled = true;
       try {
-        const ref = doc(db, 'users', currentUid, 'settings', 'veda');
+        const ref  = doc(db, 'users', currentUid, 'settings', 'veda');
         const snap = await getDoc(ref);
+        const update = { trustedPhones: arrayUnion(normalized) };
+        if (nickname) update[`phoneNicknames.${normalized}`] = nickname;
         if (snap.exists()) {
-          await updateDoc(ref, { trustedPhones: arrayUnion(normalized) });
+          await updateDoc(ref, update);
         } else {
-          await setDoc(ref, { trustedPhones: [normalized] });
+          const data = { trustedPhones: [normalized] };
+          if (nickname) data.phoneNicknames = { [normalized]: nickname };
+          await setDoc(ref, data);
         }
         phoneInput.value = '';
-        toast(`${normalized} added.`);
+        nicknameInput.value = '';
+        toast(`${nickname || normalized} added.`);
         await loadPhones();
       } catch (e) {
         toast('Failed to add number.', true);
@@ -486,7 +509,8 @@
       if (!confirm(`Remove ${phone}?`)) return;
       try {
         await updateDoc(doc(db, 'users', currentUid, 'settings', 'veda'), {
-          trustedPhones: arrayRemove(phone)
+          trustedPhones: arrayRemove(phone),
+          [`phoneNicknames.${phone}`]: deleteField()
         });
         toast(`${phone} removed.`);
         await loadPhones();
