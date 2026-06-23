@@ -342,7 +342,8 @@
     import {
       getAuth,
       GoogleAuthProvider,
-      signInWithPopup,
+      signInWithRedirect,
+      getRedirectResult,
       signOut,
       onAuthStateChanged
     } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
@@ -386,6 +387,14 @@
     let statusTimer = null;
 
     // ── Auth state ────────────────────────────────────────────────────────
+    // Handle redirect result first (fires after returning from Google OAuth)
+    try {
+      const result = await getRedirectResult(auth);
+      // result is null if no redirect just happened — that's fine
+    } catch (e) {
+      toast('Sign-in failed. Try again.', true);
+    }
+
     onAuthStateChanged(auth, async user => {
       if (!user) {
         show('sign-in');
@@ -396,7 +405,6 @@
         return;
       }
       currentUid = user.uid;
-      signOutBtn.hidden = false;
       show('admin');
       await loadPhones();
     });
@@ -409,11 +417,10 @@
     }
 
     // ── Sign in / out ─────────────────────────────────────────────────────
-    async function googleSignIn() {
+    function googleSignIn() {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-      try { await signInWithPopup(auth, provider); }
-      catch (e) { toast('Sign-in cancelled.', true); }
+      signInWithRedirect(auth, provider);
     }
 
     signInBtn.addEventListener('click', googleSignIn);
