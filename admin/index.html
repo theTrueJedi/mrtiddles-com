@@ -342,8 +342,7 @@
     import {
       getAuth,
       GoogleAuthProvider,
-      signInWithRedirect,
-      getRedirectResult,
+      signInWithPopup,
       signOut,
       onAuthStateChanged
     } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
@@ -387,14 +386,6 @@
     let statusTimer = null;
 
     // ── Auth state ────────────────────────────────────────────────────────
-    // Handle redirect result first (fires after returning from Google OAuth)
-    try {
-      const result = await getRedirectResult(auth);
-      // result is null if no redirect just happened — that's fine
-    } catch (e) {
-      toast('Sign-in failed. Try again.', true);
-    }
-
     onAuthStateChanged(auth, async user => {
       if (!user) {
         show('sign-in');
@@ -417,10 +408,11 @@
     }
 
     // ── Sign in / out ─────────────────────────────────────────────────────
-    function googleSignIn() {
+    async function googleSignIn() {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-      signInWithRedirect(auth, provider);
+      try { await signInWithPopup(auth, provider); }
+      catch (e) { if (e.code !== 'auth/popup-closed-by-user') toast('Sign-in failed. Try again.', true); }
     }
 
     signInBtn.addEventListener('click', googleSignIn);
