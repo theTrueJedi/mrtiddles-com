@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veda Admin</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    :root {
+      --purple: #6f2db1;
+      --blue: #5b8ac2;
+      --teal: #5bc1b3;
+      --lavender: #9B7FD9;
+      --lavender-light: #D4C5F0;
+      --bg: #F7F5FB;
+      --card: #ffffff;
+      --text: #2D1B3D;
+      --text-secondary: #6B5B7D;
+      --border: #E6DDF5;
+      --gradient: linear-gradient(90deg, #6f2db1 0%, #5b8ac2 50%, #5bc1b3 100%);
+      --shadow: 0 2px 12px rgba(111, 45, 177, 0.1);
+      --red: #c0392b;
+      --red-light: #f9e8e7;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 1rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container { max-width: 600px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* Nav */
+    nav {
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--border);
+      background: rgba(247, 245, 251, 0.95);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    nav .container { display: flex; align-items: center; justify-content: space-between; }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 1rem;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+    }
+    .nav-tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      background: var(--lavender-light);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-left: 0.5rem;
+    }
+    .nav-left { display: flex; align-items: center; gap: 0.25rem; }
+
+    /* Gradient rule */
+    .gradient-rule {
+      height: 3px;
+      background: var(--gradient);
+      border-radius: 2px;
+      margin-bottom: 2rem;
+      width: 48px;
+    }
+
+    /* Main content */
+    main { padding: 3rem 0 4rem; }
+
+    h1 {
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.35rem;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 2.5rem;
+    }
+
+    /* Sign-in view */
+    #sign-in-view { text-align: center; padding: 2rem 0; }
+    #sign-in-view p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+    .btn-google {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: box-shadow 200ms, transform 200ms;
+    }
+    .btn-google:hover { box-shadow: 0 4px 16px rgba(111,45,177,0.15); transform: translateY(-1px); }
+    .btn-google svg { flex-shrink: 0; }
+
+    /* Denied view */
+    #denied-view {
+      text-align: center;
+      padding: 2rem 0;
+      color: var(--red);
+    }
+    #denied-view p { margin-bottom: 0.5rem; }
+
+    /* Admin view */
+    #admin-view { display: none; }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    /* Add phone form */
+    .add-form {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1.75rem;
+    }
+    .add-form input {
+      flex: 1;
+      padding: 0.7rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: var(--card);
+      outline: none;
+      transition: border-color 180ms;
+    }
+    .add-form input:focus { border-color: var(--purple); }
+    .add-form input::placeholder { color: var(--text-secondary); }
+
+    .btn-primary {
+      padding: 0.7rem 1.25rem;
+      background: var(--purple);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 200ms, transform 200ms;
+    }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Phone list */
+    .phone-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .phone-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem 1.1rem;
+      box-shadow: var(--shadow);
+      animation: fadeIn 200ms ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+    .phone-number {
+      font-size: 0.95rem;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-remove {
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--red);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 0.3rem 0.6rem;
+      cursor: pointer;
+      transition: background 180ms, border-color 180ms;
+    }
+    .btn-remove:hover { background: var(--red-light); border-color: #e8b4b0; }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      background: var(--card);
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+    }
+
+    /* Status toast */
+    #status {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: var(--text);
+      color: white;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.6rem 1.25rem;
+      border-radius: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms, transform 200ms;
+      white-space: nowrap;
+      z-index: 100;
+    }
+    #status.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #status.error { background: var(--red); }
+
+    /* Sign out button */
+    .btn-signout {
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.3rem 0.65rem;
+      cursor: pointer;
+      transition: color 180ms, border-color 180ms;
+    }
+    .btn-signout:hover { color: var(--purple); border-color: var(--purple); }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.25rem 0;
+      background: var(--card);
+    }
+    footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+    footer p { font-size: 0.8rem; color: var(--text-secondary); }
+    footer a { font-size: 0.8rem; color: var(--purple); text-decoration: none; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="container">
+      <div class="nav-left">
+        <a href="https://mrtiddles.com" class="nav-brand">Evan Tidd</a>
+        <span class="nav-tag">Admin</span>
+      </div>
+      <button class="btn-signout" id="sign-out-btn" hidden>Sign out</button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container">
+      <div class="gradient-rule"></div>
+      <h1>Veda Admin</h1>
+      <p class="subtitle">Manage authorized phone numbers for Veda SMS</p>
+
+      <!-- Sign-in view -->
+      <div id="sign-in-view">
+        <p>Sign in with your authorized Google account to continue.</p>
+        <button class="btn-google" id="sign-in-btn">
+          <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+            <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
+            <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.548 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
+          </svg>
+          Sign in with Google
+        </button>
+      </div>
+
+      <!-- Access denied view -->
+      <div id="denied-view" hidden>
+        <p><strong>Access denied.</strong></p>
+        <p>This panel is restricted to authorized accounts.</p>
+        <br>
+        <button class="btn-google" id="switch-account-btn">
+          Sign in with a different account
+        </button>
+      </div>
+
+      <!-- Admin view -->
+      <div id="admin-view">
+        <p class="section-label">Add Phone Number</p>
+        <div class="add-form">
+          <input type="tel" id="phone-input" placeholder="+1 (555) 555-5555" autocomplete="off">
+          <button class="btn-primary" id="add-btn">Add</button>
+        </div>
+
+        <p class="section-label">Trusted Numbers</p>
+        <ul class="phone-list" id="phone-list">
+          <li class="empty-state">No trusted numbers yet.</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 Evan Tidd. All rights reserved.</p>
+      <a href="https://mrtiddles.com/veda">Veda</a>
+    </div>
+  </footer>
+
+  <div id="status"></div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      arrayUnion,
+      arrayRemove
+    } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
+
+    const FIREBASE_CONFIG = {
+      projectId:         "logbook-1138",
+      appId:             "1:680224716012:web:094b895861f55cd224a1c9",
+      storageBucket:     "logbook-1138.firebasestorage.app",
+      apiKey:            "AIzaSyCYETKeMktnj3c0c4XEK_y1ENSnpLlauwo",
+      authDomain:        "logbook-1138.firebaseapp.com",
+      messagingSenderId: "680224716012",
+    };
+    const ADMIN_EMAIL = "evantidd@gmail.com";
+
+    const app  = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // ── UI refs ───────────────────────────────────────────────────────────
+    const signInView     = document.getElementById('sign-in-view');
+    const deniedView     = document.getElementById('denied-view');
+    const adminView      = document.getElementById('admin-view');
+    const signInBtn      = document.getElementById('sign-in-btn');
+    const switchBtn      = document.getElementById('switch-account-btn');
+    const signOutBtn     = document.getElementById('sign-out-btn');
+    const phoneInput     = document.getElementById('phone-input');
+    const addBtn         = document.getElementById('add-btn');
+    const phoneList      = document.getElementById('phone-list');
+    const statusEl       = document.getElementById('status');
+
+    let currentUid = null;
+    let statusTimer = null;
+
+    // ── Auth state ────────────────────────────────────────────────────────
+    onAuthStateChanged(auth, async user => {
+      if (!user) {
+        show('sign-in');
+        return;
+      }
+      if (user.email !== ADMIN_EMAIL) {
+        show('denied');
+        return;
+      }
+      currentUid = user.uid;
+      signOutBtn.hidden = false;
+      show('admin');
+      await loadPhones();
+    });
+
+    function show(view) {
+      signInView.hidden  = view !== 'sign-in';
+      deniedView.hidden  = view !== 'denied';
+      adminView.style.display = view === 'admin' ? 'block' : 'none';
+      signOutBtn.hidden  = view !== 'admin';
+    }
+
+    // ── Sign in / out ─────────────────────────────────────────────────────
+    async function googleSignIn() {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      try { await signInWithPopup(auth, provider); }
+      catch (e) { toast('Sign-in cancelled.', true); }
+    }
+
+    signInBtn.addEventListener('click', googleSignIn);
+    switchBtn.addEventListener('click', async () => { await signOut(auth); googleSignIn(); });
+    signOutBtn.addEventListener('click', () => signOut(auth));
+
+    // ── Load phones ───────────────────────────────────────────────────────
+    async function loadPhones() {
+      phoneList.innerHTML = '<li class="empty-state">Loading…</li>';
+      try {
+        const snap = await getDoc(doc(db, 'users', currentUid, 'settings', 'veda'));
+        const phones = snap.exists() ? (snap.data().trustedPhones || []) : [];
+        renderPhones(phones);
+      } catch (e) {
+        toast('Failed to load numbers.', true);
+        phoneList.innerHTML = '<li class="empty-state">Could not load numbers.</li>';
+      }
+    }
+
+    function renderPhones(phones) {
+      if (!phones.length) {
+        phoneList.innerHTML = '<li class="empty-state">No trusted numbers yet.</li>';
+        return;
+      }
+      phoneList.innerHTML = phones
+        .map(p => `
+          <li class="phone-item">
+            <span class="phone-number">${p}</span>
+            <button class="btn-remove" data-phone="${p}">Remove</button>
+          </li>`)
+        .join('');
+      phoneList.querySelectorAll('.btn-remove').forEach(btn => {
+        btn.addEventListener('click', () => removePhone(btn.dataset.phone));
+      });
+    }
+
+    // ── Add phone ─────────────────────────────────────────────────────────
+    addBtn.addEventListener('click', () => addPhone());
+    phoneInput.addEventListener('keydown', e => { if (e.key === 'Enter') addPhone(); });
+
+    async function addPhone() {
+      const raw = phoneInput.value.trim();
+      const normalized = toE164(raw);
+      if (!normalized) {
+        toast('Enter a valid US phone number.', true);
+        phoneInput.focus();
+        return;
+      }
+      addBtn.disabled = true;
+      try {
+        const ref = doc(db, 'users', currentUid, 'settings', 'veda');
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          await updateDoc(ref, { trustedPhones: arrayUnion(normalized) });
+        } else {
+          await setDoc(ref, { trustedPhones: [normalized] });
+        }
+        phoneInput.value = '';
+        toast(`${normalized} added.`);
+        await loadPhones();
+      } catch (e) {
+        toast('Failed to add number.', true);
+      } finally {
+        addBtn.disabled = false;
+        phoneInput.focus();
+      }
+    }
+
+    // ── Remove phone ──────────────────────────────────────────────────────
+    async function removePhone(phone) {
+      if (!confirm(`Remove ${phone}?`)) return;
+      try {
+        await updateDoc(doc(db, 'users', currentUid, 'settings', 'veda'), {
+          trustedPhones: arrayRemove(phone)
+        });
+        toast(`${phone} removed.`);
+        await loadPhones();
+      } catch (e) {
+        toast('Failed to remove number.', true);
+      }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+    function toE164(input) {
+      const digits = input.replace(/\D/g, '');
+      if (digits.length === 10) return `+1${digits}`;
+      if (digits.length === 11 && digits[0] === '1') return `+${digits}`;
+      if (digits.length > 7 && input.startsWith('+')) return `+${digits}`;
+      return null;
+    }
+
+    function toast(msg, isError = false) {
+      clearTimeout(statusTimer);
+      statusEl.textContent = msg;
+      statusEl.className = isError ? 'show error' : 'show';
+      statusTimer = setTimeout(() => { statusEl.className = ''; }, 2800);
+    }
+  </script>
+</body>
+</html>
